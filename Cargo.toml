@@ -1,0 +1,73 @@
+[package]
+name = "proton-vpn-binary-status"
+version = "1.0.0"
+edition = "2021"
+
+[features]
+default = ["jitter"]
+cffi = []
+debug = []
+
+# Bindings for other languages
+uniffi = ["dep:uniffi"]
+
+# Adds jitter to the score calculation based on os provided entropy
+jitter = ["rand/thread_rng"]
+
+# Serde support
+serde = ["serde/derive"]
+
+# Utilities for making api requests to the proton https api
+test_utils_backend = ["dep:anyhow", "dep:muon", "dep:serde_json", "dep:futures",
+                      "serde", "debug", "dep:async-trait"]
+
+# The web view that compares v1 and v2 endpoints for debugging/observability
+test_utils_webview = ["dep:leptos", "dep:console_log",
+                      "dep:console_error_panic_hook", "dep:anyhow",
+                      "test_utils_backend"]
+
+[[bin]]
+name = "webview"
+required-features = ["test_utils_webview"]
+
+[dependencies]
+log = "0.4.27"
+thiserror = "2.0.12"
+
+# uniffi
+uniffi = { version = "0.29", features = ["cli"], optional = true }
+
+# jitter
+rand = {version = "0.9.2", optional=true, default-features = false}
+
+# serde
+serde = { version = "1.0.219", features = ["derive"], optional = true }
+
+# test_utils_backend
+muon = { version = "=1.4.1", registry = "proton_public", optional = true }
+anyhow = { version = "1.0.98", optional=true }
+async-trait = { version = "0.1.88", optional=true }
+serde_json = { version="1.0.140", optional=true }
+futures = { version = "0.3.31", optional=true }
+
+# test_utils_webview
+leptos = { version = "0.8.6", features = ["csr"], optional = true }
+console_log = { version = "1.0.0", optional = true }
+console_error_panic_hook = { version="0.1.7", optional=true }
+
+# This is added as an explicit dependency only when we are building for wasm
+# because some dependencies use getrandom and it can only be used in wasm
+# if the js random number generator is enabled.
+[target.'cfg(target_family = "wasm")'.dependencies]
+getrandom = {version="0.3.3", features=["wasm_js"]}
+
+[dev-dependencies]
+serde_json = "1.0.140"
+test-log = "0.2.17"
+tokio = "1.45.1"
+
+[build-dependencies]
+uniffi = { version = "0.29", features = ["build"], optional = true }
+
+[lib]
+crate-type = ["rlib", "cdylib"]
