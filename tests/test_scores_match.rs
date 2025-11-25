@@ -35,7 +35,7 @@ async fn compare_scores(
     let mut mismatched = 0;
     for a in v1.logical_servers {
         if let Some(b) = v2_lookup.get(a.name.as_str()) {
-            let variance = backend::compute_variance_mbps(&a, b);
+            let variance = backend::compute_variance(&a, b);
             if filter_comparison(&a, b) {
                 if variance > acceptable_variance {
                     log::info!(

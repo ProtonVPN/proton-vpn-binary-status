@@ -22,5 +22,5 @@ mod endpoints;
 pub mod v1;
 pub mod v2;
 
-pub use compute_variance::compute_variance_mbps;
+pub use compute_variance::compute_variance;
 pub use endpoints::Endpoints;

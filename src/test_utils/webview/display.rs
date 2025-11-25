@@ -2,6 +2,8 @@ use super::AppState;
 use crate::test_utils::backend;
 use leptos::prelude::*;
 
+const ACCEPTABLE_VARIANCE: f64 = 0.01;
+
 #[leptos::component]
 pub fn LogicalComponent(
     logical: backend::v1::Server,
@@ -55,9 +57,8 @@ pub fn Display(state: ReadSignal<AppState>) -> impl IntoView {
                         let p_l1 = l1.clone();
 
                         if let Some(p_l2) = v2_lookup.get(l1.name.as_str()) {
-                            let variance = backend::compute_variance_mbps(&p_l1, p_l2);
-
-                            if p_l1.load == p_l2.load && variance > 0.01 {
+                            let variance = backend::compute_variance(&p_l1, p_l2);
+                            if p_l1.load == p_l2.load && variance > ACCEPTABLE_VARIANCE {
                                 view! {
                                     <LogicalComponent logical=p_l1 variance=variance/>
                                     <LogicalComponent logical=p_l2.clone() variance=variance/>

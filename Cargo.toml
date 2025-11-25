@@ -1,6 +1,6 @@
 [package]
 name = "proton-vpn-binary-status"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 include = ["src"]
 authors = ["ProtonAG"]

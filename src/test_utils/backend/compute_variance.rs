@@ -12,7 +12,7 @@ pub fn match_jitter(a: &v1::Server, b: &v1::Server) -> (f64, f64) {
     (a_score, b_score)
 }
 
-pub fn compute_variance_mbps(a: &v1::Server, b: &v1::Server) -> f64 {
+pub fn compute_variance(a: &v1::Server, b: &v1::Server) -> f64 {
     let (a_score, b_score) = match_jitter(a, b);
     (a_score - b_score).abs()
 }
