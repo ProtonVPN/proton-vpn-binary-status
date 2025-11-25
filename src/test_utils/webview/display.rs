@@ -14,10 +14,10 @@ pub fn LogicalComponent(
         <td>{logical.load}</td>
         <td style="text-align:left;">{logical.score}</td>
         {
-            if variance > 100.0 {
-                view! { <td style="text-align:left; color: red;">{format!("{:.6} Mbps", variance)}</td> }
+            if variance > 0.1 {
+                view! { <td style="text-align:left; color: red;">{format!("{:.6} %", variance)}</td> }
             } else {
-                view! { <td style="text-align:left; color: black;">{format!("{:.6} Mbps", variance)}</td> }
+                view! { <td style="text-align:left; color: black;">{format!("{:.6} %", variance)}</td> }
             }
         }
     </tr>
@@ -57,7 +57,7 @@ pub fn Display(state: ReadSignal<AppState>) -> impl IntoView {
                         if let Some(p_l2) = v2_lookup.get(l1.name.as_str()) {
                             let variance = backend::compute_variance_mbps(&p_l1, p_l2);
 
-                            if variance > 100.0 {
+                            if p_l1.load == p_l2.load && variance > 0.01 {
                                 view! {
                                     <LogicalComponent logical=p_l1 variance=variance/>
                                     <LogicalComponent logical=p_l2.clone() variance=variance/>
@@ -97,8 +97,14 @@ pub fn Display(state: ReadSignal<AppState>) -> impl IntoView {
 
                 leptos::task::spawn_local(async move {
                     let (v1_logicals, v2_logicals) = futures::join!(
-                        backend::v1::get_logicals(&mut local_endpoints_a),
-                        backend::v2::get_logicals(&mut local_endpoints_b)
+                        backend::v1::get_logicals(
+                            &mut local_endpoints_a,
+                            |_| true
+                        ),
+                        backend::v2::get_logicals(
+                            &mut local_endpoints_b,
+                            |_| true
+                        )
                     );
 
                     if v1_logicals.is_err() || v2_logicals.is_err() {

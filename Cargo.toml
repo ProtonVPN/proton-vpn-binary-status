@@ -1,6 +1,6 @@
 [package]
 name = "proton-vpn-binary-status"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 include = ["src"]
 authors = ["ProtonAG"]
@@ -12,6 +12,7 @@ repository = "https://github.com/ProtonVPN/proton-vpn-binary-status"
 default = ["jitter"]
 cffi = []
 debug = []
+legacy = []
 
 # Bindings for other languages
 uniffi = ["dep:uniffi"]

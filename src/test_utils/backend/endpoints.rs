@@ -7,10 +7,10 @@ pub enum Endpoints {
 }
 
 impl Endpoints {
-    pub async fn new() -> Result<Self> {
+    pub async fn new(default_cache_dir: &str) -> Result<Self> {
         let cache = std::path::PathBuf::from(
             std::env::var("PROTON_VPN_BINARY_STATUS_TEST_CACHE")
-                .unwrap_or("./tests/resources/endpoints".into()),
+                .unwrap_or(default_cache_dir.into()),
         );
 
         let user = std::env::var("PROTON_VPN_BINARY_STATUS_TEST_USER");

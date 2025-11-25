@@ -26,6 +26,10 @@ pub struct Server {
     // it.
     #[serde(rename = "ScoreJitter")]
     pub score_jitter_bps: f64,
+
+    #[cfg(feature = "debug")]
+    #[serde(skip)]
+    pub debug: crate::load::LoadDebugFields,
 }
 
 #[derive(
@@ -36,13 +40,18 @@ pub struct Logicals {
     pub logical_servers: Vec<Server>,
 }
 
-pub async fn get_logicals(endpoints: &mut Endpoints) -> Result<Logicals> {
+pub async fn get_logicals(
+    endpoints: &mut Endpoints,
+    filter: impl Fn(&super::v1::Server) -> bool,
+) -> Result<Logicals> {
     let mut logicals: Logicals = endpoints
         .get_deserialized(
             "vpn/v1/logicals",
             Some((NETZONE_HEADER, USER_IP_ADDRESS)),
         )
         .await?;
+
+    logicals.logical_servers.retain(filter);
 
     logicals.logical_servers.sort_by(|a, b| a.name.cmp(&b.name));
 

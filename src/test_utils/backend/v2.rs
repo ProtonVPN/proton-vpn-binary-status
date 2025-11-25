@@ -31,6 +31,11 @@ pub fn patch_secure_core(logicals: &mut super::v2::Logicals) {
     for server in logicals.logical_servers.iter_mut() {
         for (prefix, location) in secure_core_prefixes.iter() {
             if server.name.starts_with(prefix) {
+                log::info!(
+                    "Patching secure core server {} location to {:?}",
+                    server.name,
+                    location
+                );
                 server.logical.entry_location = crate::Location {
                     latitude: location.0 as f32,
                     longitude: location.1 as f32,
@@ -43,11 +48,17 @@ pub fn patch_secure_core(logicals: &mut super::v2::Logicals) {
 
 pub async fn get_logicals(
     endpoints: &mut Endpoints,
+    filter: impl Fn(&super::v2::Server) -> bool,
 ) -> Result<super::v1::Logicals> {
     let mut logicals: Logicals =
         endpoints.get_deserialized("vpn/v2/logicals", None).await?;
 
-    patch_secure_core(&mut logicals);
+    logicals.logical_servers.retain(filter);
+
+    #[cfg(feature = "legacy")]
+    {
+        patch_secure_core(&mut logicals);
+    }
 
     let status_endpoints =
         format!("vpn/v2/status/{}/binary", logicals.status_id);
@@ -83,6 +94,8 @@ pub async fn get_logicals(
             load: load.load,
             score: load.score,
             score_jitter_bps: 0.0,
+            #[cfg(feature = "debug")]
+            debug: load.debug.clone(),
         });
     }
 

@@ -8,7 +8,7 @@ use super::load::LoadDebugFields;
 use super::location::Location;
 // -----------------------------------------------------------------------------
 const PARTIAL_SCORE_CEILING: f64 = 0.99; // = normalize(100.0) = (10000 - 100) / 10000
-const BANDWITH_DISTANCE_FACTOR: f64 = 738000.0; // Mbps/km
+const BANDWITH_DISTANCE_FACTOR: f64 = 738_000.0; // Mbps/km
 
 pub(crate) const SCORE_NORMALIZATION_FACTOR: f64 = 10_000.0; // Mbps (10 Gbps)
 
@@ -48,28 +48,53 @@ fn compute_distance_between(a: &Location, b: &Location) -> f64 {
     )
 }
 
+// Depending on whether we are using legacy mode or not,
+// the travel distance is computed differently.
+//
+// In legacy mode, we calculate the distance from the client to the server as:
+//   distance(client -> server_exit)
+// In non-legacy mode, we calculate the distance from the client to the server as:
+//   distance(client -> server_entry)
+
+#[cfg(feature = "legacy")]
+pub fn compute_travel_distance(
+    server_exit_location: &Location,
+    server_entry_location: &Location,
+    client_position: &Location,
+) -> f64 {
+    compute_distance_between(client_position, server_exit_location)
+        + compute_distance_between(server_entry_location, server_exit_location)
+}
+
+#[cfg(not(feature = "legacy"))]
+pub fn compute_travel_distance(
+    server_exit_location: &Location,
+    server_entry_location: &Location,
+    client_position: &Location,
+) -> f64 {
+    compute_distance_between(client_position, server_entry_location)
+        + compute_distance_between(server_entry_location, server_exit_location)
+}
+
 pub(crate) fn compute_distance_score(
     server_exit_location: &Location,
     server_entry_location: &Location,
     client_position: &Option<Location>,
 ) -> f64 {
-    let mut distance_in_km = 0.0;
-
-    // We have client position.
-    if let Some(client_position) = client_position {
-        // We have server entry location so we compute the distance
-        // from the client to the server entry and then from the entry
-        // to the exit.
-        distance_in_km +=
-            compute_distance_between(client_position, server_entry_location);
-
-        distance_in_km += compute_distance_between(
-            server_entry_location,
+    let distance_in_km = if let Some(client_position) = client_position {
+        compute_travel_distance(
             server_exit_location,
-        );
-    }
+            server_entry_location,
+            client_position,
+        )
+    } else {
+        0.0
+    };
 
-    normalize(BANDWITH_DISTANCE_FACTOR / f64::max(1.0, distance_in_km))
+    let proximity_based_bandwidth_estimate =
+        BANDWITH_DISTANCE_FACTOR / f64::max(1.0, distance_in_km);
+
+    normalize(proximity_based_bandwidth_estimate)
 }
 
 pub(crate) fn compute_penalty(
