@@ -177,7 +177,7 @@ mod tests {
             .expect("Failed to parse status file");
 
         let mut errors = move |_index: usize, _offset: usize, error: &str| {
-            panic!("Should not have any errors {}", error);
+            panic!("Should not have any errors {error}");
         };
 
         let default = ServerStatus::default();

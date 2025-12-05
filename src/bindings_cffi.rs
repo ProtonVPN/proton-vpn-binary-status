@@ -67,10 +67,10 @@ pub extern "C" fn compute_loads_cffi(
         if user_country_ptr.is_null() {
             None
         } else {
-            match Country::new(&*user_country_ptr) {
+            match Country::try_from(&*user_country_ptr) {
                 Ok(c) => Some(c),
                 Err(err) => {
-                    set_err(error, err.0);
+                    set_err(error, &err.to_string());
                     return -2;
                 }
             }

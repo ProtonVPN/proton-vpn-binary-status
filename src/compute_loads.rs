@@ -106,7 +106,7 @@ mod tests {
     }
 
     fn create_dummy_country() -> Country {
-        Country::new(b"CH").expect("Invalid country code")
+        Country::try_from(b"CH").expect("Invalid country code")
     }
 
     #[test]

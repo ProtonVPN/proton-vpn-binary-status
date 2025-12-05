@@ -248,8 +248,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.5,
-                &Some(Country::new(b"FR")?),
-                Country::new(b"FR")?,
+                &Some(Country::try_from(b"FR")?),
+                Country::try_from(b"FR")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -259,8 +259,8 @@ mod tests {
                 123.0,
                 0_u8,
                 0.5,
-                &Some(Country::new(b"FR")?),
-                Country::new(b"FR")?,
+                &Some(Country::try_from(b"FR")?),
+                Country::try_from(b"FR")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -270,8 +270,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.99,
-                &Some(Country::new(b"FR")?),
-                Country::new(b"FR")?,
+                &Some(Country::try_from(b"FR")?),
+                Country::try_from(b"FR")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -281,8 +281,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.5,
-                &Some(Country::new(b"FR")?),
-                Country::new(b"GB")?,
+                &Some(Country::try_from(b"FR")?),
+                Country::try_from(b"GB")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -292,8 +292,8 @@ mod tests {
                 0.0,
                 1_u8,
                 0.5,
-                &Some(Country::new(b"FR")?),
-                Country::new(b"GB")?,
+                &Some(Country::try_from(b"FR")?),
+                Country::try_from(b"GB")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -303,8 +303,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.5,
-                &Some(Country::new(b"FR")?),
-                Country::new(b"FR")?,
+                &Some(Country::try_from(b"FR")?),
+                Country::try_from(b"FR")?,
                 STATUS_ENABLED
             )
         );
@@ -314,8 +314,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.5,
-                &Some(Country::new(b"FR")?),
-                Country::new(b"FR")?,
+                &Some(Country::try_from(b"FR")?),
+                Country::try_from(b"FR")?,
                 STATUS_VISIBLE
             )
         );
@@ -325,8 +325,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.5,
-                &Some(Country::new(b"FR")?),
-                Country::new(b"FR")?,
+                &Some(Country::try_from(b"FR")?),
+                Country::try_from(b"FR")?,
                 0_u8
             )
         );
@@ -339,7 +339,7 @@ mod tests {
                 0_u8,
                 0.5,
                 &None,
-                Country::new(b"FR")?,
+                Country::try_from(b"FR")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -366,7 +366,7 @@ mod tests {
             ComputeScoreServerParams {
                 status_penalty: 0.0,
                 status_cost: 0_u8,
-                country: Country::new(b"FR")?,
+                country: Country::try_from(b"FR")?,
                 partial_score: 0.5,
                 status: STATUS_ENABLED | STATUS_VISIBLE,
                 exit_location: &paris,
@@ -376,7 +376,7 @@ mod tests {
                 debug: &mut debug_fields,
             },
             &Some(toulouse.clone()),
-            &Some(Country::new(b"FR")?),
+            &Some(Country::try_from(b"FR")?),
         );
 
         assert_eq!(
@@ -393,7 +393,7 @@ mod tests {
             ComputeScoreServerParams {
                 status_penalty: 0.0,
                 status_cost: 0_u8,
-                country: Country::new(b"FR")?,
+                country: Country::try_from(b"FR")?,
                 partial_score: 0.5,
                 status: STATUS_ENABLED | STATUS_VISIBLE,
                 exit_location: &Location {
@@ -412,7 +412,7 @@ mod tests {
                 latitude: 46.2044, // Geneva
                 longitude: 6.1432,
             }),
-            &Some(Country::new(b"CH")?),
+            &Some(Country::try_from(b"CH")?),
         );
 
         assert_eq!(1.5, score);

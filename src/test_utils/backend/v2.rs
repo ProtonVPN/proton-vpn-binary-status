@@ -80,7 +80,7 @@ pub async fn get_logicals(
             latitude: USER_LATITUDE,
             longitude: USER_LONGITUDE,
         }),
-        &Some(Country::new(USER_COUNTRY)?),
+        &Some(Country::try_from(USER_COUNTRY)?),
     )?;
 
     let mut logicals_v1 = super::v1::Logicals {
