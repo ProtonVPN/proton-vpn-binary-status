@@ -84,6 +84,14 @@ impl TryFrom<String> for Country {
     }
 }
 
+// This also implements `to_string()`
+impl std::fmt::Display for Country {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.pad(self.as_str())
+    }
+}
+
+// Needed by `uniffi`
 impl From<Country> for String {
     fn from(value: Country) -> Self {
         String::from_utf8_lossy(&value.0).into_owned()
@@ -148,8 +156,8 @@ mod tests {
         );
 
         assert_eq!(Country::try_from("US")?.as_str(), "US");
-
-        assert_eq!(<String>::from(Country::try_from("US")?), "US".to_string());
+        assert_eq!(Country::try_from("US")?.to_string(), "US");
+        assert_eq!(String::from(Country::try_from("US")?), "US");
 
         Ok(())
     }

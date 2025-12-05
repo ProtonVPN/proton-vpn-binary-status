@@ -24,7 +24,7 @@ mod logical;
 mod status;
 
 pub use compute_loads::compute_loads;
-pub use country::Country;
+pub use country::{Country, CountryConversionError};
 pub use error::{Error, Result};
 pub use load::Load;
 pub use location::Location;
