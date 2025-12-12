@@ -7,7 +7,7 @@ use super::compute_score::{
 };
 use super::jitter;
 use super::status::Parser;
-use super::{Country, Error, Load, Location, Logical, Result};
+use super::{CountryCode, Error, Load, Location, Logical, Result};
 
 /// Computes the load for each server based on the user location and status file.
 /// The function updates the `loads` slice with the computed values.
@@ -22,7 +22,7 @@ pub fn compute_loads(
     logicals: &[Logical],
     status_file: &[u8],
     user_location: &Option<Location>,
-    user_country: &Option<Country>,
+    user_country: &Option<CountryCode>,
 ) -> Result<()> {
     let statuses = Parser::try_from(status_file)?;
 
@@ -94,7 +94,7 @@ mod tests {
     use std::vec;
 
     use super::*;
-    use crate::country::Country;
+    use crate::country_code::CountryCode;
     use crate::location::Location;
     use crate::logical::StatusReference;
 
@@ -105,8 +105,8 @@ mod tests {
         }
     }
 
-    fn create_dummy_country() -> Country {
-        Country::try_from(b"CH").expect("Invalid country code")
+    fn create_dummy_country() -> CountryCode {
+        CountryCode::try_from(b"CH").expect("Invalid country code")
     }
 
     #[test]

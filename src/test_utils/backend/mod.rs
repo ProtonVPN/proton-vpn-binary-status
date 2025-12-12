@@ -7,7 +7,7 @@
 
 use anyhow::Result;
 
-use crate::{Country, Load, Location, Logical};
+use crate::{CountryCode, Load, Location, Logical};
 
 // CA#667
 pub const USER_IP_ADDRESS: &str = "149.102.228.0";

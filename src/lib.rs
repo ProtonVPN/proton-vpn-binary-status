@@ -15,7 +15,7 @@ mod bindings_uniffi;
 mod compute_loads;
 mod compute_score;
 mod coord;
-mod country;
+mod country_code;
 mod error;
 mod jitter;
 mod load;
@@ -24,7 +24,7 @@ mod logical;
 mod status;
 
 pub use compute_loads::compute_loads;
-pub use country::{Country, CountryConversionError};
+pub use country_code::{CountryCode, CountryCodeConversionError};
 pub use error::{Error, Result};
 pub use load::Load;
 pub use location::Location;

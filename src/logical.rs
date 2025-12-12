@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 // Copyright (c) 2025 Proton AG
 // -----------------------------------------------------------------------------
-use crate::country::Country;
+use crate::country_code::CountryCode;
 use crate::location::Location;
 
 /// Contains information necessary for calculating the
@@ -41,5 +41,5 @@ pub struct Logical {
     pub exit_location: Location,
     // A 2 character byte array representing the country this server is in.
     #[cfg_attr(feature = "serde", serde(rename = "ExitCountry"))]
-    pub exit_country: Country,
+    pub exit_country: CountryCode,
 }

@@ -6,7 +6,7 @@ use std::ffi::{c_char, c_int, CString};
 use std::ptr::null_mut;
 use std::slice;
 
-use super::{compute_loads, Country, Load, Location, Logical};
+use super::{compute_loads, CountryCode, Load, Location, Logical};
 
 fn set_err(out_error: *mut *mut c_char, msg: &str) {
     if out_error.is_null() {
@@ -63,11 +63,11 @@ pub extern "C" fn compute_loads_cffi(
     };
 
     // nosem: rust.lang.security.unsafe-usage.unsafe-usage
-    let user_country: Option<Country> = unsafe {
+    let user_country: Option<CountryCode> = unsafe {
         if user_country_ptr.is_null() {
             None
         } else {
-            match Country::try_from(&*user_country_ptr) {
+            match CountryCode::try_from(&*user_country_ptr) {
                 Ok(c) => Some(c),
                 Err(err) => {
                     set_err(error, &err.to_string());

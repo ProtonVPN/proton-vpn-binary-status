@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Proton AG
 // -----------------------------------------------------------------------------
 use super::coord::Coord;
-use super::country::Country;
+use super::country_code::CountryCode;
 #[cfg(feature = "debug")]
 use super::load::LoadDebugFields;
 use super::location::Location;
@@ -28,7 +28,7 @@ pub const STATUS_AUTOCONNECTABLE: u8 = 1 << 2;
 pub struct ComputeScoreServerParams<'a> {
     pub status_penalty: f64,
     pub status_cost: u8,
-    pub country: Country,
+    pub country: CountryCode,
     pub partial_score: f64,
     pub status: u8,
     pub exit_location: &'a Location, // 0 = Lat, 1 = Long
@@ -101,8 +101,8 @@ pub(crate) fn compute_penalty(
     status_penalty: f64,
     status_cost: u8,
     norm_server_available_bandwidth_for_session: f64,
-    client_country: &Option<Country>,
-    server_country: Country,
+    client_country: &Option<CountryCode>,
+    server_country: CountryCode,
     server_status: u8,
 ) -> f64 {
     let is_in_same_country = if let Some(country) = client_country {
@@ -142,7 +142,7 @@ pub(crate) fn compute_penalty(
 pub fn compute_score(
     server: ComputeScoreServerParams,
     user_location: &Option<Location>,
-    user_country: &Option<Country>,
+    user_country: &Option<CountryCode>,
 ) -> f64 {
     let distance_score = compute_distance_score(
         server.exit_location,
@@ -248,8 +248,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.5,
-                &Some(Country::try_from(b"FR")?),
-                Country::try_from(b"FR")?,
+                &Some(CountryCode::try_from(b"FR")?),
+                CountryCode::try_from(b"FR")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -259,8 +259,8 @@ mod tests {
                 123.0,
                 0_u8,
                 0.5,
-                &Some(Country::try_from(b"FR")?),
-                Country::try_from(b"FR")?,
+                &Some(CountryCode::try_from(b"FR")?),
+                CountryCode::try_from(b"FR")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -270,8 +270,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.99,
-                &Some(Country::try_from(b"FR")?),
-                Country::try_from(b"FR")?,
+                &Some(CountryCode::try_from(b"FR")?),
+                CountryCode::try_from(b"FR")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -281,8 +281,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.5,
-                &Some(Country::try_from(b"FR")?),
-                Country::try_from(b"GB")?,
+                &Some(CountryCode::try_from(b"FR")?),
+                CountryCode::try_from(b"GB")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -292,8 +292,8 @@ mod tests {
                 0.0,
                 1_u8,
                 0.5,
-                &Some(Country::try_from(b"FR")?),
-                Country::try_from(b"GB")?,
+                &Some(CountryCode::try_from(b"FR")?),
+                CountryCode::try_from(b"GB")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -303,8 +303,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.5,
-                &Some(Country::try_from(b"FR")?),
-                Country::try_from(b"FR")?,
+                &Some(CountryCode::try_from(b"FR")?),
+                CountryCode::try_from(b"FR")?,
                 STATUS_ENABLED
             )
         );
@@ -314,8 +314,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.5,
-                &Some(Country::try_from(b"FR")?),
-                Country::try_from(b"FR")?,
+                &Some(CountryCode::try_from(b"FR")?),
+                CountryCode::try_from(b"FR")?,
                 STATUS_VISIBLE
             )
         );
@@ -325,8 +325,8 @@ mod tests {
                 0.0,
                 0_u8,
                 0.5,
-                &Some(Country::try_from(b"FR")?),
-                Country::try_from(b"FR")?,
+                &Some(CountryCode::try_from(b"FR")?),
+                CountryCode::try_from(b"FR")?,
                 0_u8
             )
         );
@@ -339,7 +339,7 @@ mod tests {
                 0_u8,
                 0.5,
                 &None,
-                Country::try_from(b"FR")?,
+                CountryCode::try_from(b"FR")?,
                 STATUS_ENABLED | STATUS_VISIBLE
             )
         );
@@ -366,7 +366,7 @@ mod tests {
             ComputeScoreServerParams {
                 status_penalty: 0.0,
                 status_cost: 0_u8,
-                country: Country::try_from(b"FR")?,
+                country: CountryCode::try_from(b"FR")?,
                 partial_score: 0.5,
                 status: STATUS_ENABLED | STATUS_VISIBLE,
                 exit_location: &paris,
@@ -376,7 +376,7 @@ mod tests {
                 debug: &mut debug_fields,
             },
             &Some(toulouse.clone()),
-            &Some(Country::try_from(b"FR")?),
+            &Some(CountryCode::try_from(b"FR")?),
         );
 
         assert_eq!(
@@ -393,7 +393,7 @@ mod tests {
             ComputeScoreServerParams {
                 status_penalty: 0.0,
                 status_cost: 0_u8,
-                country: Country::try_from(b"FR")?,
+                country: CountryCode::try_from(b"FR")?,
                 partial_score: 0.5,
                 status: STATUS_ENABLED | STATUS_VISIBLE,
                 exit_location: &Location {
@@ -412,7 +412,7 @@ mod tests {
                 latitude: 46.2044, // Geneva
                 longitude: 6.1432,
             }),
-            &Some(Country::try_from(b"CH")?),
+            &Some(CountryCode::try_from(b"CH")?),
         );
 
         assert_eq!(1.5, score);

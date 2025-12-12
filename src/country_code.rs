@@ -4,10 +4,10 @@
 
 // The UniFFI bindings require errors to implement std::error::Error trait.
 #[derive(thiserror::Error, Debug, PartialEq, Eq)]
-pub enum CountryConversionError {
-    #[error("Country must be uppercase ascii letters")]
+pub enum CountryCodeConversionError {
+    #[error("Country code must be ascii letters")]
     InvalidFormat,
-    #[error("Country must be exactly 2 bytes in size")]
+    #[error("Country code must be exactly 2 bytes in size")]
     InvalidLength,
 }
 
@@ -17,9 +17,9 @@ pub enum CountryConversionError {
 // The country code is stored as a 2-byte array.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Hash)]
 #[cfg_attr(feature = "cffi", repr(C))]
-pub struct Country([u8; 2]);
+pub struct CountryCode([u8; 2]);
 
-impl Country {
+impl CountryCode {
     pub fn as_bytes(&self) -> &[u8; 2] {
         &self.0
     }
@@ -30,54 +30,56 @@ impl Country {
     }
 }
 
-impl TryFrom<&[u8; 2]> for Country {
-    type Error = CountryConversionError;
+impl TryFrom<&[u8; 2]> for CountryCode {
+    type Error = CountryCodeConversionError;
 
     fn try_from(
         value: &[u8; 2],
-    ) -> std::result::Result<Self, CountryConversionError> {
+    ) -> std::result::Result<Self, CountryCodeConversionError> {
         // Should probably validate against `ISO 3166-1 alpha-2` format more
         // strictly in the future.
-        if !(value[0].is_ascii_uppercase() && value[1].is_ascii_uppercase()) {
-            return Err(CountryConversionError::InvalidFormat);
+        if value.iter().any(|&c| !c.is_ascii()) {
+            return Err(CountryCodeConversionError::InvalidFormat);
         }
 
-        Ok(Self(*value))
+        let uppercase_value =
+            [value[0].to_ascii_uppercase(), value[1].to_ascii_uppercase()];
+        Ok(Self(uppercase_value))
     }
 }
 
-impl TryFrom<&str> for Country {
-    type Error = CountryConversionError;
+impl TryFrom<&str> for CountryCode {
+    type Error = CountryCodeConversionError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let bytes = &<[u8; 2]>::try_from(value.as_bytes())
-            .map_err(|_| CountryConversionError::InvalidLength)?;
+            .map_err(|_| CountryCodeConversionError::InvalidLength)?;
 
-        Country::try_from(bytes)
+        CountryCode::try_from(bytes)
     }
 }
 
-impl AsRef<[u8; 2]> for Country {
+impl AsRef<[u8; 2]> for CountryCode {
     fn as_ref(&self) -> &[u8; 2] {
         self.as_bytes()
     }
 }
 
-impl AsRef<str> for Country {
+impl AsRef<str> for CountryCode {
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl<'a> From<&'a Country> for &'a str {
-    fn from(value: &'a Country) -> Self {
+impl<'a> From<&'a CountryCode> for &'a str {
+    fn from(value: &'a CountryCode) -> Self {
         // This should never panic because `Country` is always ASCII
         value.as_str()
     }
 }
 
-impl TryFrom<String> for Country {
-    type Error = CountryConversionError;
+impl TryFrom<String> for CountryCode {
+    type Error = CountryCodeConversionError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         value.as_str().try_into()
@@ -85,21 +87,21 @@ impl TryFrom<String> for Country {
 }
 
 // This also implements `to_string()`
-impl std::fmt::Display for Country {
+impl std::fmt::Display for CountryCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.pad(self.as_str())
     }
 }
 
 // Needed by `uniffi`
-impl From<Country> for String {
-    fn from(value: Country) -> Self {
+impl From<CountryCode> for String {
+    fn from(value: CountryCode) -> Self {
         String::from_utf8_lossy(&value.0).into_owned()
     }
 }
 
 #[cfg(feature = "serde")]
-impl serde::Serialize for Country {
+impl serde::Serialize for CountryCode {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -109,20 +111,20 @@ impl serde::Serialize for Country {
 }
 
 #[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for Country {
+impl<'de> serde::Deserialize<'de> for CountryCode {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         let value = String::deserialize(deserializer)?;
-        value.try_into().map_err(|e: CountryConversionError| {
+        value.try_into().map_err(|e: CountryCodeConversionError| {
             serde::de::Error::custom(e.to_string())
         })
     }
 }
 
 #[cfg(feature = "uniffi")]
-uniffi::custom_type!(Country, String);
+uniffi::custom_type!(CountryCode, String);
 
 #[cfg(test)]
 mod tests {
@@ -132,32 +134,34 @@ mod tests {
 
     #[test_log::test]
     fn test_new() -> AnyResult {
-        assert_eq!(&Country::try_from(b"NZ")?.0, b"NZ");
-
-        const E: &[u8; 2] = b"\xc3\xa9"; // e with accent;
-
-        for error_case in [b"nz", b"Nz", b"nZ", E] {
-            assert_eq!(
-                Country::try_from(error_case).unwrap_err(),
-                CountryConversionError::InvalidFormat
-            );
+        for nz_variant in [b"NZ", b"nz", b"Nz", b"nZ"] {
+            assert_eq!(&CountryCode::try_from(nz_variant)?.0, b"NZ");
         }
+
+        const INVALID_CHARACTERS: &[u8; 2] = b"\xc3\xa9"; // e with accent;
+        assert_eq!(
+            CountryCode::try_from(INVALID_CHARACTERS).unwrap_err(),
+            CountryCodeConversionError::InvalidFormat
+        );
 
         Ok(())
     }
 
     #[test_log::test]
     fn test_try_from() -> AnyResult {
-        assert_eq!(Country::try_from("US")?.as_bytes(), b"US");
-        assert_eq!(Country::try_from("US".to_string())?.as_bytes(), b"US");
+        assert_eq!(CountryCode::try_from("US")?.as_bytes(), b"US");
+        assert_eq!(CountryCode::try_from("US".to_string())?.as_bytes(), b"US");
         assert_eq!(
-            Country::try_from("USA").unwrap_err(),
-            CountryConversionError::InvalidLength
+            CountryCode::try_from("USA").unwrap_err(),
+            CountryCodeConversionError::InvalidLength
         );
 
-        assert_eq!(Country::try_from("US")?.as_str(), "US");
-        assert_eq!(Country::try_from("US")?.to_string(), "US");
-        assert_eq!(String::from(Country::try_from("US")?), "US");
+        assert_eq!(CountryCode::try_from("US")?.as_str(), "US");
+        assert_eq!(CountryCode::try_from("US")?.to_string(), "US");
+        assert_eq!(String::from(CountryCode::try_from("US")?), "US");
+        assert_eq!(CountryCode::try_from("us")?.as_str(), "US");
+        assert_eq!(CountryCode::try_from("us")?.to_string(), "US");
+        assert_eq!(String::from(CountryCode::try_from("Us")?), "US");
 
         Ok(())
     }
@@ -165,10 +169,13 @@ mod tests {
     #[cfg(feature = "serde")]
     #[test_log::test]
     fn test_serialization() -> AnyResult {
-        assert_eq!(serde_json::to_string(&Country::try_from("US")?)?, "\"US\"");
         assert_eq!(
-            serde_json::from_str::<Country>("\"US\"")?,
-            Country::try_from(b"US")?
+            serde_json::to_string(&CountryCode::try_from("US")?)?,
+            "\"US\""
+        );
+        assert_eq!(
+            serde_json::from_str::<CountryCode>("\"US\"")?,
+            CountryCode::try_from(b"US")?
         );
 
         Ok(())
